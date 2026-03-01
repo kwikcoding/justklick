@@ -1,0 +1,29 @@
+{
+    "folders": [
+        {
+            "path": ".",
+            "name": "schoolData"
+        },
+        {
+            "path": "backend",
+            "name": "backend"
+        },
+        {
+            "path": "student-form",
+            "name": "student-form"
+        }
+    ],
+    "settings": {
+        "python.defaultInterpreterPath": "${workspaceFolder}/backend/venv/bin/python",
+        "python.analysis.extraPaths": [
+            "${workspaceFolder}/backend"
+        ]
+    },
+    "tasks": {
+        "isBackground": true,
+        "presentation": {
+            "reveal": "always",
+            "panel": "new"
+        }
+    }
+}

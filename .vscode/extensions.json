@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.black-formatter",
+        "ms-python.flake8",
+        "batisteo.vscode-django",
+        "monosans.djlint",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "usernamehw.errorlens",
+        "christian-kohler.path-intellisense",
+        "mutantdino.resourcemonitor"
+    ]
+}

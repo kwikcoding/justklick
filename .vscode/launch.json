@@ -1,0 +1,79 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Django: Run Server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/manage.py",
+            "args": [
+                "runserver"
+            ],
+            "django": true,
+            "justMyCode": true,
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+            },
+            "cwd": "${workspaceFolder}/backend",
+            "python": "${workspaceFolder}/backend/venv/bin/python"
+        },
+        {
+            "name": "Django: Run Server with Debugging",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/manage.py",
+            "args": [
+                "runserver",
+                "--noreload"
+            ],
+            "django": true,
+            "justMyCode": false,
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+            },
+            "cwd": "${workspaceFolder}/backend",
+            "python": "${workspaceFolder}/backend/venv/bin/python"
+        },
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "python": "${workspaceFolder}/backend/venv/bin/python",
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+            }
+        },
+        {
+            "name": "Python: Django Shell",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/manage.py",
+            "args": [
+                "shell"
+            ],
+            "django": true,
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+            },
+            "cwd": "${workspaceFolder}/backend",
+            "python": "${workspaceFolder}/backend/venv/bin/python"
+        },
+        {
+            "name": "Python: pytest",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "-v"
+            ],
+            "justMyCode": false,
+            "env": {
+                "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+            },
+            "cwd": "${workspaceFolder}/backend",
+            "python": "${workspaceFolder}/backend/venv/bin/python"
+        }
+    ]
+}

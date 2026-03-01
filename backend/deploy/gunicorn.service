@@ -1,0 +1,20 @@
+[Unit]
+Description=Gunicorn daemon for Django API (justklick.co.in)
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/api.justklick.co.in/backend
+ExecStart=/var/www/api.justklick.co.in/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/var/www/api.justklick.co.in/backend/gunicorn.sock \
+          schooldata.wsgi:application
+Environment="PATH=/var/www/api.justklick.co.in/venv/bin"
+EnvironmentFile=/var/www/api.justklick.co.in/backend/.env
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,97 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Django: Run Server",
+            "type": "shell",
+            "command": "${workspaceFolder}/backend/venv/bin/python ${workspaceFolder}/backend/manage.py runserver",
+            "options": {
+                "cwd": "${workspaceFolder}/backend",
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+                }
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "detail": "Run Django development server"
+        },
+        {
+            "label": "Django: Migrate",
+            "type": "shell",
+            "command": "${workspaceFolder}/backend/venv/bin/python ${workspaceFolder}/backend/manage.py migrate",
+            "options": {
+                "cwd": "${workspaceFolder}/backend",
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+                }
+            },
+            "problemMatcher": [],
+            "detail": "Run database migrations"
+        },
+        {
+            "label": "Django: Makemigrations",
+            "type": "shell",
+            "command": "${workspaceFolder}/backend/venv/bin/python ${workspaceFolder}/backend/manage.py makemigrations",
+            "options": {
+                "cwd": "${workspaceFolder}/backend",
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+                }
+            },
+            "problemMatcher": [],
+            "detail": "Create new migrations"
+        },
+        {
+            "label": "Django: Collectstatic",
+            "type": "shell",
+            "command": "${workspaceFolder}/backend/venv/bin/python ${workspaceFolder}/backend/manage.py collectstatic --noinput",
+            "options": {
+                "cwd": "${workspaceFolder}/backend",
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+                }
+            },
+            "problemMatcher": [],
+            "detail": "Collect static files"
+        },
+        {
+            "label": "Django: Shell",
+            "type": "shell",
+            "command": "${workspaceFolder}/backend/venv/bin/python ${workspaceFolder}/backend/manage.py shell",
+            "options": {
+                "cwd": "${workspaceFolder}/backend",
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+                }
+            },
+            "problemMatcher": [],
+            "detail": "Open Django shell"
+        },
+        {
+            "label": "Django: Test",
+            "type": "shell",
+            "command": "${workspaceFolder}/backend/venv/bin/python ${workspaceFolder}/backend/manage.py test",
+            "options": {
+                "cwd": "${workspaceFolder}/backend",
+                "env": {
+                    "DJANGO_SETTINGS_MODULE": "schooldata.settings"
+                }
+            },
+            "problemMatcher": [],
+            "detail": "Run Django tests"
+        },
+        {
+            "label": "Python: Install Requirements",
+            "type": "shell",
+            "command": "${workspaceFolder}/backend/venv/bin/pip install -r ${workspaceFolder}/backend/requirements.txt",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "problemMatcher": [],
+            "detail": "Install Python dependencies from requirements.txt"
+        }
+    ]
+}
