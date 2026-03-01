@@ -159,7 +159,6 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:5173',
     'https://justklick.co.in',
     'https://www.justklick.co.in',
-    'https://api.justklick.co.in',
 ]
 
 # Allow credentials for CORS

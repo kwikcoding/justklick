@@ -1,8 +1,8 @@
 # Deployment Guide for justklick.co.in
 
-This guide explains how to deploy the Student Data application with a split architecture:
-- **Frontend**: React + Vite on Hostinger (https://justklick.co.in)
-- **Backend**: Django REST API on VPS (https://api.justklick.co.in)
+This guide explains how to deploy the Student Data application with path-based API routing:
+- **Frontend + API**: React + Vite + Django on same domain (https://justklick.co.in)
+- **Database**: PostgreSQL
 
 ## Architecture Overview
 
@@ -11,16 +11,14 @@ This guide explains how to deploy the Student Data application with a split arch
      |
      +---> https://justklick.co.in (React Frontend - Hostinger)
      |           |
-     |           +---> API calls to https://api.justklick.co.in
+     |           +---> API calls to https://justklick.co.in/api/...
      |
-     +---> https://api.justklick.co.in (Django Backend - VPS)
-                 |
-                 +---> PostgreSQL Database
+     +---> PostgreSQL Database
 ```
 
 ---
 
-## Part 1: VPS Setup for Django Backend (api.justklick.co.in)
+## Part 1: VPS Setup for Django Backend (justklick.co.in)
 
 ### 1. SSH into VPS
 
@@ -55,22 +53,24 @@ GRANT ALL PRIVILEGES ON DATABASE schooldata TO schooldata_user;
 
 ```bash
 # Create project directory
-sudo mkdir -p /var/www/api.justklick.co.in
-sudo chown $USER:$USER /var/www/api.justklick.co.in
+sudo mkdir -p /var/www/justklick.co.in
+sudo chown $USER:$USER /var/www/justklick.co.in
 
 # Clone your repository (or upload files)
-cd /var/www/api.justklick.co.in
+cd /var/www/justklick.co.in
 git clone YOUR_REPO_URL . 
 # OR upload files via scp/sftp
 
 # Project structure should be:
-# /var/www/api.justklick.co.in/
+# /var/www/justklick.co.in/
 #   backend/
 #     schooldata/
 #     students/
 #     manage.py
 #     requirements.txt
 #     .env
+#   frontend/
+#     dist/
 #   venv/
 ```
 
@@ -89,7 +89,7 @@ pip install -r requirements.txt
 Create `.env` file in the backend directory:
 
 ```bash
-nano /var/www/api.justklick.co.in/backend/.env
+nano /var/www/justklick.co.in/backend/.env
 ```
 
 Add the following content:
@@ -100,7 +100,7 @@ DEBUG=False
 SECRET_KEY=your-very-secure-secret-key-change-this
 
 # Allowed hosts (comma-separated)
-ALLOWED_HOSTS=localhost,127.0.0.1,api.justklick.co.in
+ALLOWED_HOSTS=localhost,127.0.0.1,justklick.co.in,www.justklick.co.in
 
 # Database settings
 USE_SQLITE=false
@@ -120,7 +120,7 @@ python3 -c "from django.core.management.utils import get_random_secret_key; prin
 ### 7. Run Migrations and Collect Static Files
 
 ```bash
-cd /var/www/api.justklick.co.in/backend
+cd /var/www/justklick.co.in/backend
 source ../venv/bin/activate
 python manage.py migrate
 python manage.py collectstatic --noinput
@@ -129,8 +129,8 @@ python manage.py collectstatic --noinput
 ### 8. Create Media Directory
 
 ```bash
-mkdir -p /var/www/api.justklick.co.in/backend/media
-sudo chown -R www-data:www-data /var/www/api.justklick.co.in/backend/media
+mkdir -p /var/www/justklick.co.in/backend/media
+sudo chown -R www-data:www-data /var/www/justklick.co.in/backend/media
 ```
 
 ### 9. Set up Gunicorn Systemd Service
@@ -145,20 +145,20 @@ Add the following content:
 
 ```ini
 [Unit]
-Description=Gunicorn daemon for Django API (api.justklick.co.in)
+Description=Gunicorn daemon for Django API (justklick.co.in)
 After=network.target
 
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/api.justklick.co.in/backend
-ExecStart=/var/www/api.justklick.co.in/venv/bin/gunicorn \
+WorkingDirectory=/var/www/justklick.co.in/backend
+ExecStart=/var/www/justklick.co.in/venv/bin/gunicorn \
           --access-logfile - \
           --workers 3 \
-          --bind unix:/var/www/api.justklick.co.in/backend/gunicorn.sock \
+          --bind unix:/var/www/justklick.co.in/backend/gunicorn.sock \
           schooldata.wsgi:application
-Environment="PATH=/var/www/api.justklick.co.in/venv/bin"
-EnvironmentFile=/var/www/api.justklick.co.in/backend/.env
+Environment="PATH=/var/www/justklick.co.in/venv/bin"
+EnvironmentFile=/var/www/justklick.co.in/backend/.env
 Restart=always
 RestartSec=5
 
@@ -180,7 +180,7 @@ sudo systemctl status gunicorn
 Create Nginx configuration:
 
 ```bash
-sudo nano /etc/nginx/sites-available/api.justklick.co.in
+sudo nano /etc/nginx/sites-available/justklick.co.in
 ```
 
 Add the following content:
@@ -188,21 +188,33 @@ Add the following content:
 ```nginx
 server {
     listen 80;
-    server_name api.justklick.co.in;
+    server_name justklick.co.in www.justklick.co.in;
 
+    # Frontend - React static files
     location / {
+        root /var/www/justklick.co.in/frontend/dist;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API - Django backend
+    location /api/ {
         include proxy_params;
-        proxy_pass http://unix:/var/www/api.justklick.co.in/backend/gunicorn.sock;
+        proxy_pass http://unix:/var/www/justklick.co.in/backend/gunicorn.sock;
+    }
+
+    location /admin/ {
+        include proxy_params;
+        proxy_pass http://unix:/var/www/justklick.co.in/backend/gunicorn.sock;
     }
 
     # Serve static files
     location /static/ {
-        alias /var/www/api.justklick.co.in/backend/staticfiles/;
+        alias /var/www/justklick.co.in/backend/staticfiles/;
     }
 
     # Serve media files
     location /media/ {
-        alias /var/www/api.justklick.co.in/backend/media/;
+        alias /var/www/justklick.co.in/backend/media/;
     }
 }
 ```
@@ -210,7 +222,7 @@ server {
 Enable the site:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/api.justklick.co.in /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/justklick.co.in /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -218,15 +230,15 @@ sudo systemctl restart nginx
 ### 11. Set Proper Permissions
 
 ```bash
-sudo chown -R www-data:www-data /var/www/api.justklick.co.in
-sudo chmod -R 755 /var/www/api.justklick.co.in
+sudo chown -R www-data:www-data /var/www/justklick.co.in
+sudo chmod -R 755 /var/www/justklick.co.in
 ```
 
 ### 12. Enable HTTPS with Let's Encrypt
 
 ```bash
 sudo apt install certbot python3-certbot-nginx -y
-sudo certbot --nginx -d api.justklick.co.in
+sudo certbot --nginx -d justklick.co.in -d www.justklick.co.in
 ```
 
 The certbot will automatically modify your Nginx config to include SSL.
@@ -245,16 +257,16 @@ sudo ufw enable
 
 ### 1. Configure Frontend Environment
 
-Update `student-form/.env.production`:
+Update `frontend/.env.production`:
 
 ```env
-VITE_API_URL=https://api.justklick.co.in
+VITE_API_URL=https://justklick.co.in
 ```
 
 ### 2. Build the React Application
 
 ```bash
-cd student-form
+cd frontend
 npm install
 npm run build
 ```
@@ -292,7 +304,6 @@ Create `.htaccess` in `public_html/`:
 |---------|-------------------|--------------------|-------|
 | A       | @                 | HOSTINGER_IP       | 14400 |
 | A       | www               | HOSTINGER_IP       | 14400 |
-| A       | api               | VPS_IP             | 14400 |
 
 ---
 
@@ -300,8 +311,8 @@ Create `.htaccess` in `public_html/`:
 
 After deployment, verify:
 
-1. **Backend API**: Visit `https://api.justklick.co.in/admin/` - Django admin should load
-2. **API Endpoint**: Visit `https://api.justklick.co.in/api/students/` - Should return JSON
+1. **Backend API**: Visit `https://justklick.co.in/admin/` - Django admin should load
+2. **API Endpoint**: Visit `https://justklick.co.in/api/students/` - Should return JSON
 3. **Frontend**: Visit `https://justklick.co.in` - React app should load
 4. **Integration**: Submit form on frontend - data should save to backend
 
@@ -350,14 +361,14 @@ psql -U schooldata_user schooldata < backup.sql
 
 ### Frontend (.env.production)
 ```env
-VITE_API_URL=https://api.justklick.co.in
+VITE_API_URL=https://justklick.co.in
 ```
 
 ### Backend (.env on VPS)
 ```env
 DEBUG=False
 SECRET_KEY=<your-secure-key>
-ALLOWED_HOSTS=localhost,127.0.0.1,api.justklick.co.in
+ALLOWED_HOSTS=localhost,127.0.0.1,justklick.co.in,www.justklick.co.in
 USE_SQLITE=false
 DB_NAME=schooldata
 DB_USER=schooldata_user
@@ -380,11 +391,11 @@ DB_PORT=5432
 
 ### 3. 502 Bad Gateway
 - Check if Gunicorn is running: `sudo systemctl status gunicorn`
-- Verify socket file exists: `ls -la /var/www/api.justklick.co.in/backend/gunicorn.sock`
+- Verify socket file exists: `ls -la /var/www/justklick.co.in/backend/gunicorn.sock`
 - Check Nginx error logs: `sudo tail -f /var/log/nginx/error.log`
 
 ### 4. Permission Denied
-- Fix permissions: `sudo chown -R www-data:www-data /var/www/api.justklick.co.in`
+- Fix permissions: `sudo chown -R www-data:www-data /var/www/justklick.co.in`
 
 ### 5. Database Connection Error
 - Verify PostgreSQL is running: `sudo systemctl status postgresql`
